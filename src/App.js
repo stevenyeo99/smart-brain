@@ -22,8 +22,30 @@ class App extends Component {
       imageUrl: '',
       box: {},
       route: 'signin',
-      isSignedIn: false
+      isSignedIn: false,
+      user: {
+        id: '',
+        name: '',
+        email: '',
+        entries: 0,
+        joined: ''
+      }
     };  
+  }
+
+  loadUser = (data) => {
+
+    const { id, name, email, entries, joined } = data;
+
+    this.setState({
+      user: {
+        id,
+        name,
+        email,
+        entries,
+        joined
+      }
+    })
   }
 
   routeChangeHandler = (route) => {
@@ -95,13 +117,31 @@ class App extends Component {
 
     fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/versions/" + MODEL_VERSION_ID + "/outputs", requestOptions)
       .then(response => response.json())
-      .then(result => this.displayFaceBox(this.calculateFaceLocation(result)))
+      .then(result => {
+
+        fetch('http://localhost:3000/image', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id: this.state.user.id })
+        }).then(response => response.json())
+        .then(user => {
+          if (user) {
+            this.setState({
+              user: Object.assign(this.state.user, { entries: user.entries })
+            });
+          }
+        })
+
+        this.displayFaceBox(this.calculateFaceLocation(result));
+      })
       .catch(error => console.log('error', error));
   }
 
   render() {
-    const { inputChangeHandler, buttonSubmitHandler, routeChangeHandler } = this;
-    const { box, imageUrl, isSignedIn, route } = this.state;
+    const { inputChangeHandler, buttonSubmitHandler, routeChangeHandler, loadUser } = this;
+    const { box, imageUrl, isSignedIn, route, user } = this.state;
 
     return (
       <div className="App">
@@ -114,20 +154,21 @@ class App extends Component {
           (
             <Fragment>
               <Logo />
-              <Rank />
+              <Rank name={user.name} entries={user.entries} />
               <ImageLinkForm onInputChange={inputChangeHandler} onButtonSubmit={buttonSubmitHandler} />
               <FaceRecognition box={box} imageUrl={imageUrl}/>
-              <ParticlesBg type="cobweb" bg={true} />
             </Fragment>
           )
           :
           (
             route === 'register' ? 
-              <Register onRouteChange={routeChangeHandler} /> 
+              <Register onRouteChange={routeChangeHandler} loadUser={loadUser} /> 
               : 
-              <Signin onRouteChange={routeChangeHandler} />
+              <Signin onRouteChange={routeChangeHandler} loadUser={loadUser} />
           )
         }
+        
+        <ParticlesBg type="cobweb" bg={true} color='#FFFFFF'/>
       </div>
     );
   }
