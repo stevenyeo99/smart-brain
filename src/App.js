@@ -12,25 +12,27 @@ import Register from './components/Register/Register';
 import './App.css';
 import 'tachyons';
 
+const initialState = {
+  input: '',
+  imageUrl: '',
+  box: {},
+  route: 'signin',
+  isSignedIn: false,
+  user: {
+    id: '',
+    name: '',
+    email: '',
+    entries: 0,
+    joined: ''
+  }
+};
+
 class App extends Component {
 
   constructor() {
     super();
-    
-    this.state = {
-      input: '',
-      imageUrl: '',
-      box: {},
-      route: 'signin',
-      isSignedIn: false,
-      user: {
-        id: '',
-        name: '',
-        email: '',
-        entries: 0,
-        joined: ''
-      }
-    };  
+
+    this.state = initialState;
   }
 
   loadUser = (data) => {
@@ -52,7 +54,7 @@ class App extends Component {
     if (route === 'home') {
       this.setState({isSignedIn: true});
     } else if (route === 'signout') {
-      this.setState({isSignedIn: false});
+      this.setState(initialState);
     }
 
     this.setState({route: route});
@@ -83,42 +85,26 @@ class App extends Component {
   };
 
   buttonSubmitHandler = (event) => {
-    this.setState({imageUrl: this.state.input});
-    const PAT = '99aca85930584d0aa188655e856ed5b6';
-
-    const USER_ID = 'clarifai';
-    const APP_ID = 'main';
-    const MODEL_ID = 'face-detection';
-    const MODEL_VERSION_ID = '6dc7e46bc9124c5c8824be4822abe105';
     const IMAGE_URL = this.state.input;
+    this.setState({imageUrl: IMAGE_URL});
 
-    const raw = JSON.stringify({
-      "user_app_id": {
-        "user_id": USER_ID,
-        "app_id": APP_ID
-      },
-      "inputs": [{
-        "data": {
-          "image": {
-            "url": IMAGE_URL
-          }
-        }
-      }]
-    });
-
-    const requestOptions = {
+    fetch("http://localhost:3000/imageUrl", {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Key ' + PAT
+        'Content-Type': 'application/json'
       },
-      body: raw
-    };
+      body: JSON.stringify({
+        input: IMAGE_URL
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Unable to detect face.');
+        }
 
-    fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/versions/" + MODEL_VERSION_ID + "/outputs", requestOptions)
-      .then(response => response.json())
+        return response.json()
+      })
       .then(result => {
-
         fetch('http://localhost:3000/image', {
           method: 'PUT',
           headers: {
@@ -132,7 +118,7 @@ class App extends Component {
               user: Object.assign(this.state.user, { entries: user.entries })
             });
           }
-        })
+        }).catch(console.log)
 
         this.displayFaceBox(this.calculateFaceLocation(result));
       })
