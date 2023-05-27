@@ -32,7 +32,7 @@ class Register extends React.Component {
     onSubmitRegister = () => {
         const { loadUser, onRouteChange } = this.props;
 
-        fetch('http://localhost:3000/register', {
+        fetch('https://smart-brain-api-wmqs.onrender.com/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

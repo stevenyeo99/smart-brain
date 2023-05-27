@@ -88,7 +88,7 @@ class App extends Component {
     const IMAGE_URL = this.state.input;
     this.setState({imageUrl: IMAGE_URL});
 
-    fetch("http://localhost:3000/imageUrl", {
+    fetch("https://smart-brain-api-wmqs.onrender.com/imageUrl", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -105,7 +105,7 @@ class App extends Component {
         return response.json()
       })
       .then(result => {
-        fetch('http://localhost:3000/image', {
+        fetch('https://smart-brain-api-wmqs.onrender.com/image', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'

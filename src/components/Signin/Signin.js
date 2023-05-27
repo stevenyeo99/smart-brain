@@ -26,7 +26,7 @@ class Signin extends React.Component {
 
         const { loadUser, onRouteChange } = this.props;
 
-        fetch('http://localhost:3000/signin', {
+        fetch('https://smart-brain-api-wmqs.onrender.com/signin', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
